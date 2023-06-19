@@ -9,7 +9,7 @@ Any = object()
 
 class MarinoDB:
     DATABASE_HOST        = 'localhost'
-    DATABASE_NAME        = 'marinodb'
+    DATABASE_NAME        = 'marinoinsights'
     DATABASE_CHARSET     = 'utf8mb4'
     DATABASE_CURSORCLASS = pymysql.cursors.DictCursor
     connection           = None
@@ -37,33 +37,45 @@ class MarinoDB:
         with self.connection.cursor() as cursor:
             cursor.execute(statement, args)
             return cursor.fetchall()
+        
+    def __commit(self, statement, args=None):
+        with self.connection.cursor() as cursor:
+            cursor.execute(statement, args)
+            return self.connection.commit()
 
     # ----------------------------- Student ----------------------------- #
 
-    # Create a Student
-    def create_student(self, student_id: int, lock_no: Optional[int] = None) -> None:
-        pass
-
     # Log a Student into the facility. (UPDATE)
     def update_student_login(self, student_id: int, lock_no: Optional[int] = None) -> None:
-        pass
+        return self.__fetchall("CALL login_student(%s, %s)", (student_id, lock_no))
 
     # Log a Student out of the facility. (UPDATE)
     def update_student_logout(self, student_id: int) -> None:
-        pass
+        return self.__fetchall("CALL logout_student(%s)", (student_id))
 
     # Check the total number of Students on a given Floor (READ)
     def get_total_students(self, floor_level: int) -> int:
-        pass
+        return self.__fetchall("CALL students_on_floor(%s)", (floor_level))
 
+    # List all students (READ)
     def get_students(self) -> tuple[dict[str, Any], ...]:
-        pass
+        return self.__fetchall('SELECT * FROM student')
 
     # ----------------------------- Equipment ----------------------------- #
 
+    # Add a new piece of equipment (CREATE)
+    def create_equipment(self, equipment_id: int, level: int) -> None:
+        return self.__commit(
+            "INSERT IGNORE INTO equipment (equipment_id, level) VALUES (%s, %s)", 
+            (equipment_id, level)
+        )
+
     # Update the status of a piece of Equipment. (UPDATE)
     def update_equipment_status(self, equipment_id: int, status: str) -> None:
-        pass
+        return self.__commit(
+            'UPDATE equipment SET status=%s WHERE equipment_id=%s', 
+            (status, equipment_id)
+        )
 
     # Record a Student entering a Queue. (CREATE)
     def update_queue_enter(self, equipment_id: int, student_id: int) -> None:
@@ -73,20 +85,17 @@ class MarinoDB:
     def update_queue_exit(self, equipment_id: int, student_id: int) -> None:
         pass
 
-    # Check the average wait time for a Queue. (READ)
-    def get_average_wait(self, equipment_id: int) -> float:
-        pass
-
     # Check an Equipment's wait time. (READ)
-    def get_current_wait(self, equipment_id: int) -> float:
+    def get_equipment_wait(self, equipment_id: int) -> float:
         pass
 
     # Remove a piece of equipment (DELETE)
     def delete_equipment(self, equipment_id: int) -> None:
-        pass
+        return self.__commit("DELETE FROM equipment WHERE equipment_id=%s", (equipment_id))
 
+    # List all equipment
     def get_equipment(self) -> tuple[dict[str, Any], ...]:
-        pass
+        return self.__fetchall('SELECT * FROM equipment')
 
     # ----------------------------- Reservation ----------------------------- #
 

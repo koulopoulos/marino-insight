@@ -38,6 +38,11 @@ class MarinoDB:
             cursor.execute(statement, args)
             return cursor.fetchall()
         
+    def __fetchone(self, statement, args=None):
+        with self.connection.cursor() as cursor:
+            cursor.execute(statement, args)
+            return cursor.fetchone()
+        
     def __commit(self, statement, args=None):
         with self.connection.cursor() as cursor:
             cursor.execute(statement, args)
@@ -46,12 +51,12 @@ class MarinoDB:
     # ----------------------------- Student ----------------------------- #
 
     # Log a Student into the facility. (UPDATE)
-    def update_student_login(self, student_id: int, lock_no: Optional[int] = None) -> None:
-        return self.__fetchall("CALL login_student(%s, %s)", (student_id, lock_no))
+    def update_student_login(self, student_fname: str, student_lname: str, student_id: int) -> None:
+        return self.__commit("CALL student_login(%s, %s, %s)", (student_fname, student_lname, student_id))
 
     # Log a Student out of the facility. (UPDATE)
     def update_student_logout(self, student_id: int) -> None:
-        return self.__fetchall("CALL logout_student(%s)", (student_id))
+        return self.__fetchone("CALL student_logout(%s)", (student_id))
 
     # Check the total number of Students on a given Floor (READ)
     def get_total_students(self, floor_level: int) -> int:
@@ -101,21 +106,20 @@ class MarinoDB:
 
     # Submit a Reservation (CREATE)
     def create_reservation(
-        self, student_id: int, room_no: int, type: str, date: str,
-        start_time: str, end_time: str, description: Optional[str] = None
+        self, status: str, type: str, start_datetime: str, 
+        end_datetime: str, room_no: int, student_id: int,
     ) -> None:
-        pass
+        return self.__fetchone(
+            "CALL create_reservation(%s, %s, %s, %s, %s, %s)", 
+            (status, type, start_datetime, end_datetime, room_no, student_id)
+        )
 
     # Check the status of a Reservation (READ)
     def get_reservation_status(self, reservation_number: int) -> str:
-        pass
-
-    # Delete a Reservation (DELETE)
-    def delete_reservation(self, reservation_number: int) -> None:
-        pass
+        return self.__fetchall("CALL reservation_status(%s)", (reservation_number))
 
     def get_reservations(self) -> tuple[dict[str, Any], ...]:
-        pass
+        return self.__fetchall("CALL get_reservations()")
     
     # ----------------------------- Lock ----------------------------- #
 

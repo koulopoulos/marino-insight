@@ -46,13 +46,15 @@ class MarinoDB:
     def __commit(self, statement, args=None):
         with self.connection.cursor() as cursor:
             cursor.execute(statement, args)
-            return self.connection.commit()
+            res = cursor.fetchone()
+            self.connection.commit()
+            return res
 
     # ----------------------------- Student ----------------------------- #
 
     # Log a Student into the facility. (UPDATE)
     def update_student_login(self, student_fname: str, student_lname: str, student_id: int) -> None:
-        return self.__commit("CALL student_login(%s, %s, %s)", (student_fname, student_lname, student_id))
+        return self.__fetchone("CALL student_login(%s, %s, %s)", (student_fname, student_lname, student_id))
 
     # Log a Student out of the facility. (UPDATE)
     def update_student_logout(self, student_id: int) -> None:
@@ -82,18 +84,6 @@ class MarinoDB:
             (status, equipment_id)
         )
 
-    # Record a Student entering a Queue. (CREATE)
-    def update_queue_enter(self, equipment_id: int, student_id: int) -> None:
-        pass
-
-    # Record a Student exiting a Queue. (UPDATE)
-    def update_queue_exit(self, equipment_id: int, student_id: int) -> None:
-        pass
-
-    # Check an Equipment's wait time. (READ)
-    def get_equipment_wait(self, equipment_id: int) -> float:
-        pass
-
     # Remove a piece of equipment (DELETE)
     def delete_equipment(self, equipment_id: int) -> None:
         return self.__commit("DELETE FROM equipment WHERE equipment_id=%s", (equipment_id))
@@ -101,6 +91,25 @@ class MarinoDB:
     # List all equipment
     def get_equipment(self) -> tuple[dict[str, Any], ...]:
         return self.__fetchall('SELECT * FROM equipment')
+    
+    # ----------------------------- Queue ----------------------------- #
+
+    # Record a Student entering a Queue. (CREATE)
+    def update_queue_enter(self, student_id: int, equipment_id: int) -> None:
+        return self.__commit("CALL queue_enter(%s, %s)", (student_id, equipment_id))
+
+    # Record a Student exiting a Queue. (DELETE)
+    def update_queue_exit(self, student_id: int) -> None:
+        return self.__commit("DELETE FROM queue WHERE student_id=%s", (student_id))
+
+    # List a Queue. (READ)
+    def get_queue(self, equipment_id: int) -> int:
+        return self.__fetchall(
+            """SELECT student_id, entry_datetime 
+                FROM queue WHERE equipment_id=%s 
+                ORDER BY entry_datetime ASC""", 
+            (equipment_id)
+        )
 
     # ----------------------------- Reservation ----------------------------- #
 

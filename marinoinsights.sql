@@ -131,11 +131,11 @@ CREATE TABLE `queue` (
   `student_id` int NOT NULL,
   `equipment_id` int NOT NULL,
   `entry_datetime` datetime NOT NULL,
-  `exit_datetime` datetime DEFAULT NULL,
   PRIMARY KEY (`student_id`,`equipment_id`),
   KEY `fk_queue_student_id` (`student_id`),
   KEY `fk_queue_equipment_id` (`equipment_id`),
-  CONSTRAINT `fk_queue_equipment_id` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`equipment_id`)
+  CONSTRAINT `fk_queue_equipment_id` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`equipment_id`),
+  CONSTRAINT `fk_queue_student_id` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -145,7 +145,7 @@ CREATE TABLE `queue` (
 
 LOCK TABLES `queue` WRITE;
 /*!40000 ALTER TABLE `queue` DISABLE KEYS */;
-INSERT INTO `queue` VALUES (1001,1,'2023-06-20 09:00:00','2023-06-20 09:30:00'),(1002,2,'2023-06-20 10:15:00','2023-06-20 11:00:00'),(1003,3,'2023-06-28 13:45:00','2023-06-28 14:30:00'),(1004,4,'2023-06-28 15:30:00','2023-06-28 16:00:00'),(1005,5,'2023-07-03 17:00:00','2023-07-03 18:00:00'),(1006,1,'2023-07-03 10:30:00','2023-07-03 11:00:00'),(1007,2,'2023-07-03 11:45:00',NULL),(1008,3,'2023-07-10 14:15:00','2023-07-10 15:00:00'),(1009,4,'2023-07-10 16:30:00',NULL),(1010,5,'2023-07-10 18:30:00','2023-07-10 19:00:00');
+INSERT INTO `queue` VALUES (1001,1,'2023-06-20 09:00:00'),(1002,2,'2023-06-20 10:15:00'),(1003,3,'2023-06-28 13:45:00'),(1004,4,'2023-06-28 15:30:00'),(1005,5,'2023-07-03 17:00:00'),(1006,1,'2023-07-03 10:30:00'),(1007,2,'2023-07-03 11:45:00'),(1008,3,'2023-07-10 14:15:00'),(1009,4,'2023-07-10 16:30:00'),(1010,5,'2023-07-10 18:30:00');
 /*!40000 ALTER TABLE `queue` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -169,7 +169,7 @@ CREATE TABLE `reservation` (
   KEY `fk_reservation_student_id` (`student_id`),
   CONSTRAINT `fk_reservation_room_no` FOREIGN KEY (`room_no`) REFERENCES `room` (`room_no`),
   CONSTRAINT `fk_reservation_student_id` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,8 +178,7 @@ CREATE TABLE `reservation` (
 
 LOCK TABLES `reservation` WRITE;
 /*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
-INSERT INTO `reservation` VALUES 
-(1,'Confirmed','Yoga Class','2023-06-20 09:00:00','2023-06-20 11:00:00',202,1001),(2,'Pending','Basketball','2023-06-22 14:00:00','2023-06-22 16:00:00',101,1001),(3,'Confirmed','Basketball','2023-06-25 10:00:00','2023-06-25 12:00:00',101,1002),(4,'Cancelled','Personal Training','2023-06-28 13:00:00','2023-06-28 15:00:00',207,1003),(5,'Confirmed','Basketball','2023-06-30 09:00:00','2023-06-30 17:00:00',303,1003),(6,'Confirmed','Yoga Class','2023-07-01 16:00:00','2023-07-01 18:00:00',202,1004),(7,'Pending','Personal Training','2023-07-03 11:00:00','2023-07-03 13:00:00',302,1005),(8,'Confirmed','Boxing','2023-07-05 14:00:00','2023-07-05 16:00:00',307,1005),(9,'Confirmed','Weightlifting Session','2023-07-08 09:00:00','2023-07-08 12:00:00',212,1006),(10,'Cancelled','CrossFit Workout','2023-07-10 13:00:00','2023-07-10 15:00:00',102,1008);
+INSERT INTO `reservation` VALUES (1,'Confirmed','Yoga Class','2023-06-20 09:00:00','2023-06-20 11:00:00',202,1001),(2,'Pending','Basketball','2023-06-22 14:00:00','2023-06-22 16:00:00',101,1001),(3,'Confirmed','Basketball','2023-06-25 10:00:00','2023-06-25 12:00:00',101,1002),(4,'Cancelled','Personal Training','2023-06-28 13:00:00','2023-06-28 15:00:00',207,1003),(5,'Confirmed','Basketball','2023-06-30 09:00:00','2023-06-30 17:00:00',303,1003),(6,'Confirmed','Yoga Class','2023-07-01 16:00:00','2023-07-01 18:00:00',202,1004),(7,'Pending','Personal Training','2023-07-03 11:00:00','2023-07-03 13:00:00',302,1005),(8,'Confirmed','Boxing','2023-07-05 14:00:00','2023-07-05 16:00:00',307,1005),(9,'Confirmed','Weightlifting Session','2023-07-08 09:00:00','2023-07-08 12:00:00',212,1006),(10,'Cancelled','CrossFit Workout','2023-07-10 13:00:00','2023-07-10 15:00:00',102,1008);
 /*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -341,6 +340,54 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `queue_enter` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `queue_enter`(
+	IN pstudent_id INT, 
+	IN pequipment_id INT
+)
+BEGIN
+    DECLARE is_valid_equipment_id BOOLEAN;
+    DECLARE is_valid_student_id BOOLEAN;
+    
+    SELECT EXISTS(
+      SELECT *
+        FROM equipment
+        WHERE equipment_id = pequipment_id
+        AND status LIKE 'Active'
+    ) INTO is_valid_equipment_id;
+    
+    SELECT EXISTS(
+      SELECT *
+        FROM student
+        WHERE student_id = pstudent_id
+        AND ISNULL(student_logout_datetime)
+    ) INTO is_valid_student_id;
+    
+    IF NOT is_valid_student_id THEN 
+        SELECT 'Invalid student.' AS result;
+	ELSEIF NOT is_valid_equipment_id THEN
+		SELECT 'Invalid equipment.' AS result;
+    ELSE
+		DELETE FROM queue WHERE student_id = pstudent_id;
+        INSERT INTO queue (student_id, equipment_id, entry_datetime) 
+			VALUES (pstudent_id, pequipment_id, NOW());
+        SELECT 'Student added to queue.' AS result;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `reservation_status` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -391,30 +438,49 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `student_login`(
-	IN student_fname VARCHAR(45),
-    IN student_lname VARCHAR(45),
-    IN student_id INT
+    IN pstudent_fname VARCHAR(45),
+    IN pstudent_lname VARCHAR(45),
+    IN pstudent_id INT
 )
 BEGIN
-	DECLARE existing_login_datetime DATETIME;
+	DECLARE is_logged_in BOOL;
+    DECLARE is_logged_out BOOL;
+    DECLARE is_matching_name_id BOOL;
     
-    SELECT student_login_datetime INTO existing_login_datetime
-		FROM student
-        WHERE student_id = student_id;
+  SELECT EXISTS(
+		SELECT *
+			FROM student
+      WHERE student_id = pstudent_id
+	) INTO is_logged_in;
+
+  SELECT EXISTS(
+		SELECT *
+			FROM student
+      WHERE student_id = pstudent_id
+      AND student_fname = pstudent_fname
+      AND student_lname = pstudent_lname
+	) INTO is_matching_name_id;
 	
-    IF existing_login_datetime IS NULL THEN
+	SELECT EXISTS(
+		SELECT *
+			FROM student
+			WHERE student_id = pstudent_id
+      AND student_logout_datetime IS NOT NULL
+	) INTO is_logged_out;
+	
+    IF NOT is_logged_in THEN
 		INSERT INTO student (student_fname, student_lname, student_id, student_login_datetime)
-		VALUES (student_fname, student_lname, student_id, NOW());
-    SELECT 'Student created and logged in.' AS result;
+		VALUES (pstudent_fname, pstudent_lname, pstudent_id, NOW());
+		SELECT 'Student created and logged in.' AS result;
     
-	ELSEIF existing_login_datetime IS NOT NULL AND student_logout_datetime IS NOT NULL THEN
+	ELSEIF is_logged_out AND is_matching_name_id THEN
 		UPDATE student
 		SET student_login_datetime = NOW(), student_logout_datetime = NULL
-		WHERE student_id = student_id;
-    SELECT 'Student logged in.' AS result;
+		WHERE student_id = pstudent_id;
+		SELECT 'Student logged in.' AS result;
     
 	ELSE
-		SELECT 'Student is already logged in. Log out before logging in again.' AS result;
+		SELECT 'Unable to log student in. Check name, ID, and logout status.' AS result;
   END IF;
 END ;;
 DELIMITER ;
@@ -433,24 +499,27 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `student_logout`(
-	IN student_id INT
+	IN pstudent_id INT
 )
 BEGIN
-	DECLARE student_exists INT;
+	DECLARE is_logged_in INT;
     
-    SELECT COUNT(*) INTO student_exists
-		FROM student
-		WHERE student_id = student_id;
+    SELECT EXISTS(
+      SELECT *
+        FROM student
+        WHERE student_id = pstudent_id
+        AND student_logout_datetime IS NULL
+    ) INTO is_logged_in;
   
-	IF student_exists > 0 THEN
+	IF is_logged_in THEN
 		UPDATE student
 		SET student_logout_datetime = NOW()
-		WHERE student_id = student_id;
-    SELECT 'Student logged out.' AS result;
+		WHERE student_id = pstudent_id;
+		SELECT 'Student logged out.' AS result;
     
 	ELSE
-		SELECT 'Student does not exist.' AS result;
-  END IF;  
+		SELECT 'Student cannot be logged out.' AS result;
+  END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -467,4 +536,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-06-19 11:44:21
+-- Dump completed on 2023-06-20 14:04:39

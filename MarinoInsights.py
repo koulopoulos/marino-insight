@@ -6,7 +6,7 @@ class MarinoInsight:
     db=None
 
     def __init__(self):
-        username, password = 'root', '1f9055068a!' # self.__login()
+        username, password = self.__login()
         self.db = MarinoDB(username, password)
 
     def __login(self):
@@ -64,8 +64,9 @@ class MarinoInsight:
         # print('> equipment add <EQUIPMENT_ID> <LEVEL>')
         # print('> equipment remove <EQUIPMENT_ID>')
         # QUEUE
-        # print('> queue enter <EQUIPMENT_ID> <STUDENT_ID>')
-        # print('> queue exit <EQUIPMENT_ID> <STUDENT_ID>')
+        print('> queue enter <STUDENT_ID> <EQUIPMENT_ID> ')
+        print('> queue exit <STUDENT_ID>')
+        print('> queue list <EQUIPMENT_ID>')
         # RESERVATION
         print('> reservation list')
         print('> reservation new <STATUS> <TYPE> <START_DATE> <START_TIME> <END_DATE> <END_TIME> <ROOM_NUMBER>')
@@ -96,7 +97,9 @@ class MarinoInsight:
             student_id = int(params[0])
             student_fname = str(params[1])
             student_lname = str(params[2])
-            return self.db.update_student_login(student_fname, student_lname, student_id)
+            res = self.db.update_student_login(student_fname, student_lname, student_id)
+            self.__print_result(res)
+            return
         except ValueError:
             return self.__invalid_params_error()
 
@@ -133,28 +136,28 @@ class MarinoInsight:
         self.__print_table(equipment)
         return
 
-    def __equipment_wait(self, params):
-        if not params:
-            return self.__missing_params_error()
-        try:
-            equipment_id = int(params[0])
-            return self.db.get_equipment_wait(equipment_id)
-        except ValueError:
-            return self.__invalid_params_error()
-
-    # def __equipment_status(self, params):
-    #     if not params or len(params) < 2:
+    # def __equipment_wait(self, params):
+    #     if not params:
     #         return self.__missing_params_error()
     #     try:
     #         equipment_id = int(params[0])
-    #         status = str(params[1])
-    #         self.db.update_equipment_status(equipment_id, status)
-    #         self.__print_result({ 'result': '' })
-    #         return
+    #         return self.db.get_equipment_wait(equipment_id)
     #     except ValueError:
     #         return self.__invalid_params_error()
-    #     except:
-    #         return self.__unknown_error()
+
+    def __equipment_status(self, params):
+        if not params or len(params) < 2:
+            return self.__missing_params_error()
+        try:
+            equipment_id = int(params[0])
+            status = str(params[1])
+            self.db.update_equipment_status(equipment_id, status)
+            self.__print_result({ 'result': '' })
+            return
+        except ValueError:
+            return self.__invalid_params_error()
+        except:
+            return self.__unknown_error()
         
     # def __equipment_add(self, params):
     #     if not params or len(params) < 2:
@@ -181,10 +184,10 @@ class MarinoInsight:
         match action:
             case 'list':
                 return self.__equipment_list()
-            case 'wait':
-                return self.__equipment_wait(params)
-            # case 'status':
-            #     return self.__equipment_status(params)
+            # case 'wait':
+            #     return self.__equipment_wait(params)
+            case 'status':
+                return self.__equipment_status(params)
             # case 'add':
             #     return self.__equipment_add(params)
             # case 'remove':
@@ -194,8 +197,58 @@ class MarinoInsight:
 
     # ----------------------------- Queue ----------------------------- #
 
+    def __queue_enter(self, params):
+        if not params or len(params) < 2:
+            return self.__missing_params_error()
+        try:
+            student_id = int(params[0])
+            equipment_id = int(params[1])
+            res = self.db.update_queue_enter(student_id, equipment_id)
+            self.__print_result(res)
+            return
+        except ValueError:
+            return self.__invalid_params_error()
+        except:
+            return self.__unknown_error()
+
+    def __queue_exit(self, params):
+        if not params:
+            return self.__missing_params_error()
+        try:
+            student_id = int(params[0])
+            res = self.db.update_queue_exit(student_id)
+            self.__print_result(res)
+            return
+        except ValueError:
+            return self.__invalid_params_error()
+        except:
+            return self.__unknown_error()
+
+    def __queue_list(self, params):
+        if not params:
+            return self.__missing_params_error()
+        try:
+            equipment_id = int(params[0])
+            res = self.db.get_queue(equipment_id)
+            self.__print_table(res)
+            return
+        except ValueError:
+            return self.__invalid_params_error()
+        except:
+            return self.__unknown_error()
+
     def __queue(self, args):
-        pass
+        action = args[0] if args else None
+        params = args[1:] if args and len(args) > 1 else None
+        match action:
+            case 'enter':
+                return self.__queue_enter(params)
+            case 'exit':
+                return self.__queue_exit(params)
+            case 'list':
+                return self.__queue_list(params)
+            case _:
+                return self.__unknown_command_error()
 
     # ----------------------------- Reservation ----------------------------- #
 
@@ -302,7 +355,7 @@ class MarinoInsight:
 
 
 if __name__ == "__main__":
-    #try:
+    try:
         MarinoInsight().run()
-    #except:
-    #    print('\n|------ Shutting down ------|\n')
+    except:
+       print('\n|------ Shutting down ------|\n')
